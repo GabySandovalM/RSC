@@ -654,6 +654,7 @@ ggplot(data = diamantes) +
   geom_bar(mapping = aes(x = corte, y = ..prop..))
 
 ggplot(data = diamantes) +
-  geom_bar(mapping = aes(x = corte, fill = color, y = ..prop..))
+  geom_bar
+
 ```
 
