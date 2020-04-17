@@ -1,0 +1,659 @@
+---
+title: "Ejercicios Capítulo 3. Visualización"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning=FALSE)
+```
+
+## Paquetes que se usan en el libro
+```{r eval = FALSE}
+#install.packages("tidyverse")
+#install.packages("datos")
+#install.packages(c("nycflights13", "gapminder", "Lahman", "nasaweather", "babynames", "fueleconomy"))
+```
+
+```{r message=FALSE, warning=FALSE, error=FALSE}
+library(tidyverse)
+library(datos)
+```
+
+### Ejercicios (3.2.4)
+
+1. Ejecuta ggplot(data = millas). ¿Qué observas?
+
+```{r}
+ggplot(data = millas)
+```
+
+2. ¿Cuántas filas hay en millas? ¿Cuántas columnas?
+```{r}
+dim(millas)
+#234 filas
+# 11 columnas
+```
+
+
+3. ¿Qué describe la variable traccion? Lee la ayuda de ?millas para encontrar la respuesta.
+
+```{r}
+#?millas
+#tipo de tracción (d = delantera, t = trasera, 4 = 4 ruedas)
+```
+
+4. Realiza un gráfico de dispersión de autopista versus cilindros.
+
+```{r}
+ggplot(data = millas) +
+  geom_point(mapping = aes(x = autopista, y = cilindros))
+```
+
+5. ¿Qué sucede cuando haces un gráfico de dispersión (scatterplot) de clase versus traccion? ¿Por qué no es útil este gráfico?
+
+```{r}
+ggplot(data = millas) + 
+  geom_point(mapping = aes(x = clase, y =traccion))
+
+# no es útil porque ambas son variables variables categóricas
+```
+
+### Estéticas
+
+- color o (colour)
+- size
+- alpha (trasparencia)
+- shape (admite hasta 6)
+
+```{r}
+ggplot(data = millas) + 
+  geom_point(mapping = aes(x = motor, y = autopista, color = clase))
+
+```
+
+Para cambiar la estética del gráfico (todos los puntos de un solo color) pero no agregar información:
+
+```{r}
+ggplot(data = millas) + 
+  geom_point(mapping = aes(x = motor, y = autopista), color = "blue")
+
+```
+
+### Ejercicios (3.3.1)
+
+1. ¿Qué no va bien en este código? ¿Por qué hay puntos que no son azules?
+
+```{r}
+ggplot(data = millas) + 
+  geom_point(mapping = aes(x = motor, y = autopista, color = "blue"))
+
+# Para cambiar la estética de forma manual debe ir fuera de aes()
+```
+
+2. ¿Qué variables en millas son categóricas? ¿Qué variables son continuas? (Sugerencia: escribe ?millas para leer la documentación de ayuda para este conjunto de datos). ¿Cómo puedes ver esta 
+información cuando ejecutas millas?
+
+```{r}
+# millas
+# bajo el nombre se puede ver el tipo de variable
+# <chr> categóricas
+# <dbl> continuas
+# <int> continuas aunque algunas podrias redefinirse como factores
+
+# Otra opción:
+# str(millas)
+```
+
+3. Asigna una variable continua a color, size, y shape. ¿Cómo se comportan estas estéticas de manera diferente para variables categóricas y variables continuas?
+
+```{r}
+ggplot(data = millas) + 
+  geom_point(mapping = aes(x = ciudad, y = motor, color = autopista))
+```
+```{r}
+ggplot(data = millas) + 
+  geom_point(mapping = aes(x = ciudad, y = motor, size = autopista))
+```
+
+```{r}
+ggplot(data = millas) + 
+  geom_point(mapping = aes(x = ciudad, y = motor, color = combustible))
+```
+
+Para las variables continuas se establecen automaticamente **rangos** de valores de la variable al usar `color` y`size`. Pero `shape` no funciona con variables continuas. 
+
+
+4. ¿Qué ocurre si asignas o mapeas la misma variable a múltiples estéticas?
+
+```{r}
+ggplot(data = millas) + 
+  geom_point(mapping = aes(x = motor, y = autopista, color = motor))
+```
+
+```{r}
+ggplot(data = millas) + 
+  geom_point(mapping = aes(x = motor, y = traccion, color = traccion, shape = traccion ))
+```
+
+Se considera las respectivas acciones en cada estética.
+
+5. ¿Qué hace la estética stroke? ¿Con qué formas trabaja? (Sugerencia: consultar ?geom_point)
+
+```{r}
+ggplot(data = millas) + 
+  geom_point(mapping = aes(x = motor, y = autopista), shape = 21, stroke = 2)
+```
+
+Trabaja con formas `shape` que tienen un borde y cambia en acho de los bordes.
+
+6. ¿Qué ocurre si se asigna o mapea una estética a algo diferente del nombre de una variable, como aes(color = motor < 5)?
+
+```{r}
+ggplot(data = millas) + 
+  geom_point(mapping = aes(x = motor < 5, y = autopista), shape = 21, stroke = 2)
+```
+
+Si se define por ejemplo `motor < 5` la variable `motor` se redefine como una de tipo binaria y el gráfico lo considera como tal.
+
+### Facetas
+
+* Gráficos separados para categorias de una variable `facet_wrap()`:
+
+```{r}
+ggplot(data = millas) +
+  geom_point(mapping = aes(x = motor, y = autopista)) +
+  facet_wrap(~ cilindros)
+```
+
+* Graficos separados combinando las categorias de dos variables `facet_grip()`
+```{r}
+ggplot(data = millas) +
+  geom_point(mapping = aes(x = motor, y = autopista)) +
+  facet_grid(traccion ~ cilindros)
+```
+
+* Para no separar en facetas las filas o columnas `facet_grid(. ~ Variable)`
+```{r}
+ggplot(data = millas) +
+  geom_point(mapping = aes(x = motor, y = autopista)) +
+  facet_grid(traccion ~ .)
+```
+
+### Ejercicios 3.5.1
+
+1. ¿Qué ocurre si intentas separar en facetas una variable continua?
+
+Habrá tantos gráficos como valores únicos en la variable continua.
+
+
+2. ¿Qué significan las celdas vacías que aparecen en el gráfico generado usando `facet_grid(traccion ~ cilindros)`? ¿Cómo se relacionan con este gráfico?
+
+
+```{r}
+ggplot(data = millas) +
+  geom_point(mapping = aes(x = traccion, y = cilindros))
+
+```
+
+El gráfico usando `facet_grid(traccion ~ cilindros)`:
+
+```{r}
+ggplot(data = millas) +
+  geom_point(mapping = aes(x = motor, y = autopista)) +
+  facet_grid(traccion ~ cilindros)
+```
+
+El gráfico por facetas no tiene puntos porque no hay observaciones con esas dos características simultaneamente y esa es la relacion entre los dos gráficos.
+
+3. ¿Qué gráfica el siguiente código? ¿Qué hace . ?
+
+```{r}
+ggplot(data = millas) +
+  geom_point(mapping = aes(x = motor, y = autopista)) +
+  facet_grid(traccion ~ .)
+```
+
+```{r}
+ggplot(data = millas) +
+  geom_point(mapping = aes(x = motor, y = autopista)) +
+  facet_grid(. ~ cilindros)
+```
+
+Hace un gráfico de dispersión del tamaño de motor versus el rendimiento en autopista. El `.` define si las facetas se colocarán en el eje x (` . ~ variable`) o en el eje y (`variable ~ .`).
+
+4. Mira de nuevo el primer gráfico en facetas presentado en esta sección:
+
+```{r}
+ggplot(data = millas) +
+  geom_point(mapping = aes(x = motor, y = autopista)) +
+  facet_wrap(~ clase, nrow = 2)
+```
+¿Cuáles son las ventajas de separar en facetas en lugar de aplicar una estética de color? ¿Cuáles son las desventajas? ¿Cómo cambiaría este balance si tuvieras un conjunto de datos más grande?
+
+Se puede identificar si la relación entre las variables es diferente dentro de cada categoría de la variable que se usa en facetas. Se tiene una mejor visualización.
+
+Con un conjunto de datos más grande podría haber gráficos con pocas observaciones y otros muy cargados que no permitan diferenciar nada relevante.
+
+5. Lee ?facet_wrap. ¿Qué hace nrow? ¿Qué hace ncol? ¿Qué otras opciones controlan el diseño de los paneles individuales? ¿Por qué facet_grid() no tiene argumentos nrow y ncol?
+
+Definen número de filas y de columnas. 
+
+Otras opciones para controlar el diseño de los paneles individuales: `labeller`, `strip.position`, `dir`
+```{r}
+ggplot(data = millas) +
+  geom_point(mapping = aes(x = motor, y = autopista)) +
+  facet_wrap(~clase, labeller = "label_both", strip.position = "bottom", dir = "v")
+```
+
+Porque `facet_grid()` combina las categorías de las dos variables.
+
+6. Cuando usas facet_grid(), generalmente deberías poner la variable con un mayor número de niveles únicos en las columnas. ¿Por qué?
+
+Las pantallas son más anchas que altas (?). Los gráficos se visualizan mejor.
+
+```{r}
+ggplot(data = millas) +
+  geom_point(mapping = aes(x = motor, y = autopista)) +
+  facet_grid(combustible ~ traccion)
+```
+
+```{r}
+ggplot(data = millas) +
+  geom_point(mapping = aes(x = motor, y = autopista)) +
+  facet_grid(traccion ~ combustible)
+```
+
+### geom 
+
+```{r}
+ggplot(data = millas) + 
+  geom_point(mapping = aes(x = motor, y = autopista, color = traccion)) + 
+  geom_smooth(mapping = aes (x = motor, y = autopista, color = traccion))
+```
+
+```{r}
+ggplot(data = millas, mapping = aes(x = motor, y = autopista)) +
+  geom_point(mapping = aes(color = clase)) +
+  geom_smooth()
+```
+
+
+### Ejercicios (3.6.1)
+(@) ¿Qué geom usarías para generar un gráfico de líneas? ¿Y para un diagrama de caja? ¿Y para un histograma? ¿Y para un gráfico de área?
+
+- Lineas: `geom_line()`
+
+- Gráficos de caja: `geom_boxplot()`
+
+```{r}
+ggplot(data = millas, mapping =aes(x = clase, y = autopista)) + 
+  geom_boxplot(outlier.shape = 21 )
+```
+
+```{r}
+#para girarlo: 
+ggplot(data = millas, mapping =aes(y = clase, x = autopista)) + 
+  geom_boxplot(outlier.shape = 21 )
+```
+
+ ** AQUI tengo una duda con los boxplot de dos variables continuas usando group**
+ 
+```{r}
+ggplot(data = millas, mapping =aes(y = autopista)) + geom_boxplot() # vertical
+ggplot(data = millas, mapping =aes(x = autopista)) + geom_boxplot() # horizontal
+ggplot(data = millas, mapping =aes(y = autopista, x = motor)) + geom_boxplot(aes(group = motor)) # esto "categoriza" la variable continua que esta en x ?
+ggplot(data = millas, mapping =aes(y = autopista, x = motor)) + geom_boxplot(aes(group = autopista)) # este para mi no tiene sentido porque quiero que y (la que se gráfica) sea autopista
+ggplot(data = millas, mapping =aes(y = autopista, x = motor)) + 
+  geom_boxplot(aes(group = cut_width(motor,2))) # por qué salen al revés? quiero graficar y :(
+```
+
+- Histograma: `geom_histogram()`
+
+```{r}
+ggplot(data = millas, mapping = aes(x = autopista)) + 
+  geom_histogram(binwidth = 1.5, alpha = 0.3, fill = "blue")
+
+ggplot(data = millas, mapping = aes(x = autopista, fill = traccion)) + 
+  geom_histogram(binwidth = 1.5, alpha = 0.3) + 
+  facet_wrap(~ traccion, ncol = 1, labeller = "label_both")
+```
+
+
+- Gráfico de área: `geom_area()`
+
+```{r}
+ggplot(data = millas, mapping = aes(x = motor, fill= traccion)) + 
+  geom_area(stat = "bin", alpha=0.3)
+#stat = "bin" grafica el conteo de la variable.
+```
+
+
+2. Ejecuta este código en tu mente y predice cómo se verá el output. Luego, ejecuta el código en R y verifica tus predicciones.
+
+```{r}
+ggplot(data = millas, mapping = aes(x = motor, y = autopista, color = traccion)) +
+  geom_point() +
+  geom_smooth(se = FALSE)
+```
+
+3. ¿Qué muestra `show.legend = FALSE`? ¿Qué pasa si lo quitas? ¿Por qué crees que lo utilizamos antes en el capítulo?
+
+Sirve para ocultar la leyenda en los gráficos. El valor por default es `TRUE`. Antes en el capítulo se oculta la leyenda pues no es necesario para el ejemplo de comparación.
+
+4. ¿Qué hace el argumento se en geom_smooth()?
+
+Agrega un inertavlo de confianza con los errores estándar.
+
+```{r}
+ggplot( data = millas, mapping = aes(x = motor, y = autopista)) + 
+  geom_smooth(se = TRUE)
+```
+
+5. ¿Se verán distintos estos gráficos? ¿Por qué sí o por qué no?
+
+```{r}
+ggplot(data = millas, mapping = aes(x = motor, y = autopista)) +
+  geom_point() +
+  geom_smooth()
+
+ggplot() +
+  geom_point(data = millas, mapping = aes(x = motor, y = autopista)) +
+  geom_smooth(data = millas, mapping = aes(x = motor, y = autopista))
+```
+
+Los gráficos son iguales. Los mapeos definidos en el primer gráfico en la funcion `ggplot()` se usarán en las siguientes capas y son los mismos que se usan en los mapeos locales del segundo gráfico.
+
+6. Recrea el código R necesario para generar los siguientes gráficos:
+
+
+```{r}
+ggplot(data = millas, mapping = aes (x = motor, y = autopista)) + 
+  geom_point(size = 3) + 
+  geom_smooth(se = FALSE)
+
+ggplot(data = millas, mapping = aes (x = motor, y = autopista)) + 
+  geom_point(size = 3) + 
+  geom_smooth(mapping = aes(group = traccion), se = FALSE, show.legend = FALSE)
+
+ggplot(data = millas, mapping = aes (x = motor, y = autopista)) + 
+  geom_point(mapping = aes(color = traccion), size = 3) + 
+  geom_smooth(mapping = aes(color = traccion), se = FALSE)
+
+ggplot(data = millas, mapping = aes (x = motor, y = autopista)) + 
+  geom_point(mapping = aes(color = traccion), size = 3) + 
+  geom_smooth(se = FALSE)
+
+ggplot(data = millas, mapping = aes (x = motor, y = autopista)) + 
+  geom_point(mapping = aes(color = traccion), size = 3) + 
+  geom_smooth(aes(linetype = traccion), se = FALSE)
+
+ggplot(data = millas, mapping = aes (x = motor, y = autopista)) + 
+  geom_point(mapping = aes(fill = traccion, stroke = 3), shape = 21, size = 3, color = "white") 
+```
+
+### Ejercicios (3.7.1)
+ ¿Cuál es el geom predeterminado asociado con stat_summary()? ¿Cómo podrías reescribir el gráfico anterior para usar esa función geom en lugar de la función stat?
+
+2. ¿Qué hace geom_col()? ¿En qué se diferencia de geom_bar()?
+
+3. La mayoría de los geoms y las trasnformaciones estadísticas vienen en pares que casi siempre se usan en conjunto. Lee la documentación y haz una lista de todos los pares. ¿Qué tienen en común?
+
+4. ¿Qué variables calcula stat_smooth()? ¿Qué parámetros controlan su comportamiento?
+
+5. En nuestro gráfico de barras de proporción necesitamos establecer group =  ¿Por qué? En otras palabras, ¿cuál es el problema con estos dos gráficos?
+
+```{r}
+ggplot(data = diamantes) +
+  geom_bar(mapping = aes(x = corte, y = ..prop..))
+
+ggplot(data = diamantes) +
+  geom_bar(mapping = aes(x = corte, fill = color, y = ..prop..))
+```
+
+
+
+* Graficos separados combinando las categorias de dos variables `facet_grip()`
+```{r}
+ggplot(data = millas) +
+  geom_point(mapping = aes(x = motor, y = autopista)) +
+  facet_grid(traccion ~ cilindros)
+```
+
+* Para no separar en facetas las filas o columnas `facet_grid(. ~ Variable)`
+```{r}
+ggplot(data = millas) +
+  geom_point(mapping = aes(x = motor, y = autopista)) +
+  facet_grid(traccion ~ .)
+```
+
+### Ejercicios 3.5.1
+
+1. ¿Qué ocurre si intentas separar en facetas una variable continua?
+
+Habrá tantos gráficos como valores únicos en la variable continua.
+
+
+2. ¿Qué significan las celdas vacías que aparecen en el gráfico generado usando `facet_grid(traccion ~ cilindros)`? ¿Cómo se relacionan con este gráfico?
+
+
+```{r}
+ggplot(data = millas) +
+  geom_point(mapping = aes(x = traccion, y = cilindros))
+
+```
+
+El gráfico usando `facet_grid(traccion ~ cilindros)`:
+
+```{r}
+ggplot(data = millas) +
+  geom_point(mapping = aes(x = motor, y = autopista)) +
+  facet_grid(traccion ~ cilindros)
+```
+
+El gráfico por facetas no tiene puntos porque no hay observaciones con esas dos características simultaneamente y esa es la relacion entre los dos gráficos.
+
+3. ¿Qué gráfica el siguiente código? ¿Qué hace . ?
+
+```{r}
+ggplot(data = millas) +
+  geom_point(mapping = aes(x = motor, y = autopista)) +
+  facet_grid(traccion ~ .)
+```
+
+```{r}
+ggplot(data = millas) +
+  geom_point(mapping = aes(x = motor, y = autopista)) +
+  facet_grid(. ~ cilindros)
+```
+
+Hace un gráfico de dispersión del tamaño de motor versus el rendimiento en autopista. El `.` define si las facetas se colocarán en el eje x (` . ~ variable`) o en el eje y (`variable ~ .`).
+
+4. Mira de nuevo el primer gráfico en facetas presentado en esta sección:
+
+```{r}
+ggplot(data = millas) +
+  geom_point(mapping = aes(x = motor, y = autopista)) +
+  facet_wrap(~ clase, nrow = 2)
+```
+¿Cuáles son las ventajas de separar en facetas en lugar de aplicar una estética de color? ¿Cuáles son las desventajas? ¿Cómo cambiaría este balance si tuvieras un conjunto de datos más grande?
+
+Se puede identificar si la relación entre las variables es diferente dentro de cada categoría de la variable que se usa en facetas. Se tiene una mejor visualización.
+
+Con un conjunto de datos más grande podría haber gráficos con pocas observaciones y otros muy cargados que no permitan diferenciar nada relevante.
+
+5. Lee ?facet_wrap. ¿Qué hace nrow? ¿Qué hace ncol? ¿Qué otras opciones controlan el diseño de los paneles individuales? ¿Por qué facet_grid() no tiene argumentos nrow y ncol?
+
+Definen número de filas y de columnas. 
+
+Otras opciones para controlar el diseño de los paneles individuales: `labeller`, `strip.position`, `dir`
+```{r}
+ggplot(data = millas) +
+  geom_point(mapping = aes(x = motor, y = autopista)) +
+  facet_wrap(~clase, labeller = "label_both", strip.position = "bottom", dir = "v")
+```
+
+Porque `facet_grid()` combina las categorías de las dos variables.
+
+6. Cuando usas facet_grid(), generalmente deberías poner la variable con un mayor número de niveles únicos en las columnas. ¿Por qué?
+
+Las pantallas son más anchas que altas (?). Los gráficos se visualizan mejor.
+
+```{r}
+ggplot(data = millas) +
+  geom_point(mapping = aes(x = motor, y = autopista)) +
+  facet_grid(combustible ~ traccion)
+```
+
+```{r}
+ggplot(data = millas) +
+  geom_point(mapping = aes(x = motor, y = autopista)) +
+  facet_grid(traccion ~ combustible)
+```
+
+### geom 
+
+```{r}
+ggplot(data = millas) + 
+  geom_point(mapping = aes(x = motor, y = autopista, color = traccion)) + 
+  geom_smooth(mapping = aes (x = motor, y = autopista, color = traccion))
+```
+
+```{r}
+ggplot(data = millas, mapping = aes(x = motor, y = autopista)) +
+  geom_point(mapping = aes(color = clase)) +
+  geom_smooth()
+```
+
+
+### Ejercicios (3.6.1)
+1. ¿Qué geom usarías para generar un gráfico de líneas? ¿Y para un diagrama de caja? ¿Y para un histograma? ¿Y para un gráfico de área?
+
+- Lineas: `geom_line()`
+
+- Gráficos de caja: `geom_boxplot()`
+
+```{r}
+ggplot(data = millas, mapping =aes(x = clase, y = autopista)) + 
+  geom_boxplot(outlier.shape = 21 )
+```
+
+```{r}
+#para girarlo: 
+ggplot(data = millas, mapping =aes(y = clase, x = autopista)) + 
+  geom_boxplot(outlier.shape = 21 )
+```
+
+ ** AQUI tengo una duda con los boxplot de dos variables continuas usando group**
+ 
+```{r}
+ggplot(data = millas, mapping =aes(y = autopista)) + geom_boxplot() # vertical
+ggplot(data = millas, mapping =aes(x = autopista)) + geom_boxplot() # horizontal
+ggplot(data = millas, mapping =aes(y = autopista, x = motor)) + geom_boxplot(aes(group = motor)) # esto "categoriza" la variable continua que esta en x ?
+ggplot(data = millas, mapping =aes(y = autopista, x = motor)) + geom_boxplot(aes(group = autopista)) # este para mi no tiene sentido porque quiero que y (la que se gráfica) sea autopista
+ggplot(data = millas, mapping =aes(y = autopista, x = motor)) + 
+  geom_boxplot(aes(group = cut_width(motor,2))) # por qué salen al revés? quiero graficar y :(
+```
+
+- Histograma: `geom_histogram()`
+
+```{r}
+ggplot(data = millas, mapping = aes(x = autopista)) + 
+  geom_histogram(binwidth = 1.5, alpha = 0.3, fill = "blue")
+
+ggplot(data = millas, mapping = aes(x = autopista, fill = traccion)) + 
+  geom_histogram(binwidth = 1.5, alpha = 0.3) + 
+  facet_wrap(~ traccion, ncol = 1, labeller = "label_both")
+```
+
+
+- Gráfico de área: `geom_area()`
+
+```{r}
+ggplot(data = millas, mapping = aes(x = motor, fill= traccion)) + 
+  geom_area(stat = "bin", alpha=0.3)
+#stat = "bin" grafica el conteo de la variable.
+```
+
+
+2. Ejecuta este código en tu mente y predice cómo se verá el output. Luego, ejecuta el código en R y verifica tus predicciones.
+
+```{r}
+ggplot(data = millas, mapping = aes(x = motor, y = autopista, color = traccion)) +
+  geom_point() +
+  geom_smooth(se = FALSE)
+```
+
+3. ¿Qué muestra `show.legend = FALSE`? ¿Qué pasa si lo quitas? ¿Por qué crees que lo utilizamos antes en el capítulo?
+
+Sirve para ocultar la leyenda en los gráficos. El valor por default es `TRUE`. Antes en el capítulo se oculta la leyenda pues no es necesario para el ejemplo de comparación.
+
+4. ¿Qué hace el argumento se en geom_smooth()?
+
+Agrega un inertavlo de confianza con los errores estándar.
+
+```{r}
+ggplot( data = millas, mapping = aes(x = motor, y = autopista)) + 
+  geom_smooth(se = TRUE)
+```
+
+5. ¿Se verán distintos estos gráficos? ¿Por qué sí o por qué no?
+
+```{r}
+ggplot(data = millas, mapping = aes(x = motor, y = autopista)) +
+  geom_point() +
+  geom_smooth()
+
+ggplot() +
+  geom_point(data = millas, mapping = aes(x = motor, y = autopista)) +
+  geom_smooth(data = millas, mapping = aes(x = motor, y = autopista))
+```
+
+Los gráficos son iguales. Los mapeos definidos en el primer gráfico en la funcion `ggplot()` se usarán en las siguientes capas y son los mismos que se usan en los mapeos locales del segundo gráfico.
+
+6. Recrea el código R necesario para generar los siguientes gráficos:
+
+
+```{r}
+ggplot(data = millas, mapping = aes (x = motor, y = autopista)) + 
+  geom_point(size = 3) + 
+  geom_smooth(se = FALSE)
+
+ggplot(data = millas, mapping = aes (x = motor, y = autopista)) + 
+  geom_point(size = 3) + 
+  geom_smooth(mapping = aes(group = traccion), se = FALSE, show.legend = FALSE)
+
+ggplot(data = millas, mapping = aes (x = motor, y = autopista)) + 
+  geom_point(mapping = aes(color = traccion), size = 3) + 
+  geom_smooth(mapping = aes(color = traccion), se = FALSE)
+
+ggplot(data = millas, mapping = aes (x = motor, y = autopista)) + 
+  geom_point(mapping = aes(color = traccion), size = 3) + 
+  geom_smooth(se = FALSE)
+
+ggplot(data = millas, mapping = aes (x = motor, y = autopista)) + 
+  geom_point(mapping = aes(color = traccion), size = 3) + 
+  geom_smooth(aes(linetype = traccion), se = FALSE)
+
+ggplot(data = millas, mapping = aes (x = motor, y = autopista)) + 
+  geom_point(mapping = aes(fill = traccion, stroke = 3), shape = 21, size = 3, color = "white") 
+```
+
+### Ejercicios (3.7.1)
+1. ¿Cuál es el geom predeterminado asociado con stat_summary()? ¿Cómo podrías reescribir el gráfico anterior para usar esa función geom en lugar de la función stat?
+
+2. ¿Qué hace geom_col()? ¿En qué se diferencia de geom_bar()?
+
+3. La mayoría de los geoms y las trasnformaciones estadísticas vienen en pares que casi siempre se usan en conjunto. Lee la documentación y haz una lista de todos los pares. ¿Qué tienen en común?
+
+4. ¿Qué variables calcula stat_smooth()? ¿Qué parámetros controlan su comportamiento?
+
+5. En nuestro gráfico de barras de proporción necesitamos establecer group = 1. ¿Por qué? En otras palabras, ¿cuál es el problema con estos dos gráficos?
+
+```{r}
+ggplot(data = diamantes) +
+  geom_bar(mapping = aes(x = corte, y = ..prop..))
+
+ggplot(data = diamantes) +
+  geom_bar(mapping = aes(x = corte, fill = color, y = ..prop..))
+```
+
