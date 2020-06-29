@@ -16,7 +16,7 @@ output:
 class: middle
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning=FALSE, fig.retina = 3)
-library(icon)
+library(icon) 
 ```
 ```{css, echo= FALSE}
 .silver{color: silver;}
